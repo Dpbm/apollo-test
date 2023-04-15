@@ -16,6 +16,7 @@ const typeDefs = `#graphql
 
     type Mutation{
         addBook(title: String, author: String): Book
+		removeBook(title:String): Book
     }
 
     type Query{
@@ -78,6 +79,26 @@ function addBook(args) {
 	return book;
 }
 
+function removeBook(args) {
+	const { title } = args;
+
+	const book = books.filter((book) => book.title === title)[0];
+	const newBooks = books.filter((book) => book.title !== title);
+
+	for (const actualAuthor of authors)
+		if (actualAuthor.name === book['author']['name']) {
+			const newAuthorBooks = actualAuthor.books.filter(
+				(book) => book.title !== title
+			);
+
+			actualAuthor['books'] = newAuthorBooks;
+			break;
+		}
+
+	books = newBooks;
+	return book;
+}
+
 const resolvers = {
 	Query: {
 		books: () => books,
@@ -85,6 +106,7 @@ const resolvers = {
 	},
 	Mutation: {
 		addBook: (_, args) => addBook(args),
+		removeBook: (_, args) => removeBook(args),
 	},
 };
 
